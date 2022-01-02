@@ -1,4 +1,4 @@
-package com.hardiksachan.ledger
+package com.hardiksachan.ledger.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
