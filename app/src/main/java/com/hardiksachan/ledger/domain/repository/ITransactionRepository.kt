@@ -1,5 +1,6 @@
 package com.hardiksachan.ledger.domain.repository
 
+import com.hardiksachan.ledger.common.ResultWrapper
 import com.hardiksachan.ledger.domain.BackendID
 import com.hardiksachan.ledger.domain.model.*
 import kotlinx.coroutines.flow.Flow
@@ -13,9 +14,9 @@ interface ITransactionRepository {
         color: Int
     )
 
-    fun getAllModes(): Flow<List<Mode>>
+    fun getAllModes(): Flow<ResultWrapper<Exception, List<Mode>>>
 
-    fun searchModes(q: String): Flow<List<Mode>>
+    fun searchModes(q: String): Flow<ResultWrapper<Exception, List<Mode>>>
 
     suspend fun removeModeIfUnused(id: BackendID)
 
@@ -25,9 +26,9 @@ interface ITransactionRepository {
         color: Int
     )
 
-    fun getAllCategories(): Flow<List<Category>>
+    fun getAllCategories(): Flow<ResultWrapper<Exception, List<Category>>>
 
-    fun searchCategories(q: String): Flow<List<Category>>
+    fun searchCategories(q: String): Flow<ResultWrapper<Exception, List<Category>>>
 
     suspend fun removeCategoryIfUnused(id: BackendID)
 
@@ -45,11 +46,14 @@ interface ITransactionRepository {
 
     suspend fun modifyTransaction(transaction: Transaction)
 
-    fun getTransactions(): Flow<List<Transaction>>
+    fun getTransactions(): Flow<ResultWrapper<Exception, List<Transaction>>>
 
-    fun getTransactionById(id: BackendID): Flow<List<Transaction>>
+    fun getTransactionById(id: BackendID): Flow<ResultWrapper<Exception, Transaction>>
 
-    fun queryTransactions(filter: TransactionFilter, sort: TransactionSort): Flow<List<Transaction>>
+    fun queryTransactions(
+        filter: TransactionFilter,
+        sort: TransactionSort
+    ): Flow<ResultWrapper<Exception, List<Transaction>>>
 
     fun deleteTransaction(id: BackendID)
 
