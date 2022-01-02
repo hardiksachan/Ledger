@@ -1,8 +1,10 @@
-package com.hardiksachan.ledger.domain
+package com.hardiksachan.ledger.domain.model
 
+import com.hardiksachan.ledger.domain.BackendID
 import kotlinx.datetime.Instant
 
 data class Transaction(
+    val id: BackendID,
     val title: String,
     val amount: Long,
     val isDebit: Boolean,
