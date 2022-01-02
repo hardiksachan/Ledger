@@ -1,6 +1,6 @@
 package com.hardiksachan.ledger.domain.model
 
-import com.hardiksachan.ledger.domain.BackendID
+import com.hardiksachan.ledger.common.BackendID
 
 data class Instrument(
     val id: BackendID,

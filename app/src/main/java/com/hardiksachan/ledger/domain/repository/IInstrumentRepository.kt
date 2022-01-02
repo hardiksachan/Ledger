@@ -1,7 +1,7 @@
 package com.hardiksachan.ledger.domain.repository
 
 import com.hardiksachan.ledger.common.ResultWrapper
-import com.hardiksachan.ledger.domain.BackendID
+import com.hardiksachan.ledger.common.BackendID
 import com.hardiksachan.ledger.domain.model.Instrument
 import kotlinx.coroutines.flow.Flow
 
