@@ -1,0 +1,15 @@
+CREATE TABLE instrumentBase (
+    id TEXT NOT NULL UNIQUE PRIMARY KEY,
+    name TEXT NOT NULL,
+    openingBalance INTEGER NOT NULL,
+    color INTEGER AS Int NOT NULL
+);
+
+addInstrument:
+INSERT OR REPLACE INTO instrumentBase (
+    id,
+    name,
+    openingBalance,
+    color
+) VALUES (:id,:name,:openingBalance,:color);
+
