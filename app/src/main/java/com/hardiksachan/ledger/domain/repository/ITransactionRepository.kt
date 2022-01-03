@@ -50,10 +50,10 @@ interface ITransactionRepository {
 
     fun getTransactionById(id: BackendID): Flow<ResultWrapper<Exception, Transaction>>
 
-    fun queryTransactions(
-        filter: TransactionFilter,
-        sort: TransactionSort
-    ): Flow<ResultWrapper<Exception, List<Transaction>>>
+//    fun queryTransactions(
+//        filter: TransactionFilter,
+//        sort: TransactionSort?
+//    ): Flow<ResultWrapper<Exception, List<Transaction>>>
 
     fun deleteTransaction(id: BackendID)
 

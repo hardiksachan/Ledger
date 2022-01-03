@@ -1,0 +1,25 @@
+CREATE VIEW instrumentExp AS
+    SELECT
+        i.id AS id,
+        i.name AS name,
+        i.openingBalance AS openingBalance,
+        i.color AS color,
+        i.openingBalance +
+            SUM(l.amount * IIF(l.isDebit, -1, 1))
+            AS currBalance
+    FROM instrumentBase AS i, ledgerEntry AS l
+    WHERE l.instrumentId = i.id;
+
+getAllInstruments:
+SELECT *
+FROM instrumentExp;
+
+searchInstruments:
+SELECT *
+FROM instrumentExp
+WHERE name LIKE "%" || :q || "%";
+
+getInstrument:
+SELECT *
+FROM instrumentExp
+WHERE id = :id;
