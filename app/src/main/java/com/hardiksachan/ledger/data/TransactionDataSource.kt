@@ -15,28 +15,37 @@ import com.hardiksachan.ledger.domain.repository.ITransactionRepository
 import com.squareup.sqldelight.Query
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 import java.util.*
 
 class TransactionDataSource(
-    private val categoryQueries: CategoryEntityQueries,
-    private val modeQueries: ModeEntityQueries,
-    private val ledgerEntryQueries: TransactionEntityQueries,
-    private val ledgerCategoryIntermediateQueries: TransactionCategoryIntermediateQueries,
-    private val dispatcherProvider: IDispatcherProvider
+    private val transactionQueries: TransactionContextQueries,
+    private val instrumentExpandedQueries: InstrumentExpandedQueries,
+    private val dispatcherProvider: IDispatcherProvider,
+    private val applicationScope: CoroutineScope
 ) : ITransactionRepository {
-    // ---------- MODE ----------
+    fun modesFlow() = transactionQueries
+        .getAllModes()
+        .asFlow()
+        .mapToList(dispatcherProvider.IO)
+        .flowOn(dispatcherProvider.IO)
+        .shareIn(applicationScope, SharingStarted.Lazily)
 
+    fun categoriesFlow() = transactionQueries
+        .getAllCategories()
+        .asFlow()
+        .mapToList(dispatcherProvider.IO)
+        .flowOn(dispatcherProvider.IO)
+        .shareIn(applicationScope, SharingStarted.Lazily)
+
+    // ---------- MODE ----------
     override suspend fun addMode(name: String, color: Int) {
         withContext(dispatcherProvider.IO) {
-            modeQueries
+            transactionQueries
                 .addMode(
-                    UUID.randomUUID().toString(),
                     name,
                     color
                 )
@@ -44,28 +53,27 @@ class TransactionDataSource(
     }
 
     override fun getAllModes(): Flow<ResultWrapper<Exception, List<Mode>>> =
-        modeQueries
+        transactionQueries
             .getAllModes()
             .mapModes()
 
     override fun searchModes(q: String): Flow<ResultWrapper<Exception, List<Mode>>> =
-        modeQueries
+        transactionQueries
             .queryModeByName(q)
             .mapModes()
 
-    override suspend fun removeModeIfUnused(id: BackendID) {
-        val count = modeQueries.getModeUsedCount(id).executeAsOne()
+    override suspend fun removeModeIfUnused(name: String) {
+        val count = transactionQueries.getModeUsedCount(id).executeAsOne()
         if (count == 0L) {
-            modeQueries.deleteModeById(id)
+            transactionQueries.deleteModeByName(name)
         }
         // TODO: what if mode is used?
     }
 
     // ---------- CATEGORY -------------
-
     override suspend fun addCategory(name: String, color: Int) {
         withContext(dispatcherProvider.IO) {
-            categoryQueries
+            transactionQueries
                 .addCategory(
                     UUID.randomUUID().toString(),
                     name,
@@ -75,19 +83,19 @@ class TransactionDataSource(
     }
 
     override fun getAllCategories(): Flow<ResultWrapper<Exception, List<Category>>> =
-        categoryQueries
+        transactionQueries
             .getAllCategories()
             .mapCategories()
 
     override fun searchCategories(q: String): Flow<ResultWrapper<Exception, List<Category>>> =
-        categoryQueries
+        transactionQueries
             .queryCategoryByName(q)
             .mapCategories()
 
     override suspend fun removeCategoryIfUnused(id: BackendID) {
-        val count = categoryQueries.getCategoryUsedCount(id).executeAsOne()
+        val count = transactionQueries.getCategoryUsedCount(id).executeAsOne()
         if (count == 0L) {
-            categoryQueries.deleteCategoryById(id)
+            transactionQueries.deleteCategoryById(id)
         }
         // TODO: what if category is used?
     }
@@ -106,8 +114,8 @@ class TransactionDataSource(
     ) {
         withContext(dispatcherProvider.IO) {
             val id = UUID.randomUUID().toString()
-            ledgerEntryQueries.transaction {
-                ledgerEntryQueries
+            transactionQueries.transaction {
+                transactionQueries
                     .insertLedgerEntry(
                         id,
                         title,
@@ -118,27 +126,67 @@ class TransactionDataSource(
                         remark,
                         createdAt.toString()
                     )
-                ledgerCategoryIntermediateQueries.transaction {
-                    categories.forEach { category ->
-                        ledgerCategoryIntermediateQueries
-                            .addCategoryToLedgerEntry(
-                                id,
-                                category.id
-                            )
-                    }
+                categories.forEach { category ->
+                    transactionQueries
+                        .addCategoryToLedgerEntry(
+                            id,
+                            category.id
+                        )
                 }
+
             }
         }
     }
 
     override suspend fun modifyTransaction(transaction: Transaction) {
-
+        transactionQueries.transaction {
+            transactionQueries.removeAllCategoriesFromLedgerEntry(transaction.id)
+            transactionQueries.deleteLedgerEntry(transaction.id)
+            with (transaction) {
+                transactionQueries.insertLedgerEntry(
+                    id,
+                    title,
+                    amount,
+                    isDebit,
+                    instrument.id,
+                    mode.id,
+                    remark,
+                    createdAt.toString()
+                )
+            }
+            transaction.categories.forEach { category ->
+                transactionQueries
+                    .addCategoryToLedgerEntry(
+                        transaction.id,
+                        category.id
+                    )
+            }
+        }
     }
 
     override fun getTransactions(): Flow<ResultWrapper<Exception, List<Transaction>>> {
-        TODO("Not yet implemented")
-    }
+        val ledgerEntryFlow = transactionQueries
+            .getAllLedgerEntries()
+            .asFlow()
+            .mapToList()
 
+        val modesFlow = modesFlow()
+
+        val categoriesFlow = categoriesFlow()
+
+
+        combine(ledgerEntryFlow, modesFlow, categoriesFlow) { entries, modes, categories ->
+            entries.map { entry ->
+                Transaction(
+                    entry.id,
+                    entry.title,
+                    entry.amount,
+                    entry.isDebit,
+                    entry.ins
+                )
+            }
+        }
+    }
     override fun getTransactionById(id: BackendID): Flow<ResultWrapper<Exception, Transaction>> {
         TODO("Not yet implemented")
     }

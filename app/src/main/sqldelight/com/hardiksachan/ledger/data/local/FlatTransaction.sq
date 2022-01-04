@@ -1,0 +1,16 @@
+CREATE VIEW flatTransaction AS
+    SELECT
+        l.*,
+        m.color AS modeColor,
+        GROUP_CONCAT(
+            CONCAT_WS('/?/', c.name, c.color) || ';'
+        ) AS categoryJson
+    FROM ledgerEntry AS l
+        JOIN mode AS m ON l.modeName = m.name
+        JOIN instrumentExp AS i ON l.instrumentId = i.id
+        JOIN category AS c
+            ON c.name IN (
+                SELECT lc.categoryName
+                FROM ledgerEntryCategory AS lc
+                WHERE lc.ledgerEntryId = l.id
+            );

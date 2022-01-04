@@ -4,7 +4,7 @@ CREATE TABLE ledgerEntry(
     amount INTEGER NOT NULL,
     isDebit INTEGER AS Boolean NOT NULL,
     instrumentId TEXT NOT NULL,
-    modeId TEXT NOT NULL,
+    modeName TEXT NOT NULL,
     remark TEXT NOT NULL,
     createdAt TEXT NOT NULL
 );

@@ -5,7 +5,7 @@ INSERT OR REPLACE INTO ledgerEntry (
     amount,
     isDebit,
     instrumentId,
-    modeId,
+    modeName,
     remark,
     createdAt
 ) VALUES (
@@ -14,7 +14,7 @@ INSERT OR REPLACE INTO ledgerEntry (
     :amount,
     :isDebit,
     :instrumentId,
-    :modeId,
+    :modeName,
     :remark,
     :createdAt
 );
@@ -33,13 +33,22 @@ deleteLedgerEntry:
 DELETE FROM ledgerEntry
 WHERE id = :id;
 
+getAllFlatTransactions:
+SELECT *
+FROM flatTransaction
+ORDER BY createdAt DESC;
+
+getFlatTransactionById:
+SELECT *
+FROM flatTransaction
+WHERE id = :id;
+
 addMode:
 INSERT OR REPLACE
 INTO mode (
-    id,
     name,
     color
-) VALUES (:id, :name, :color);
+) VALUES (:name, :color);
 
 getAllModes:
 SELECT *
@@ -50,41 +59,47 @@ SELECT *
 FROM mode
 WHERE name LIKE '%' || :name || '%';
 
-deleteModeById:
+getModeByName:
+SELECT *
+FROM mode
+WHERE name = :modeName;
+
+deleteModeByName:
 DELETE
 FROM mode
-WHERE id = :modeId;
+WHERE name = :modeName;
 
 getModeUsedCount:
 SELECT COUNT(*) AS count
 FROM ledgerEntry
-WHERE modeId = :id;
+WHERE modeName = :modeName;
 
 addCategoryToLedgerEntry:
 INSERT OR IGNORE
 INTO ledgerEntryCategory(
     ledgerEntryId,
-    categoryId
+    categoryName
 ) VALUES (
     :ledgerEntryId,
-    :categoryId
+    :categoryName
 );
 
 removeCategoryFromLedgerEntry:
 DELETE FROM ledgerEntryCategory
 WHERE
     ledgerEntryId = :ledgerEntryId AND
-    categoryId = :categoryId;
+    categoryName = :categoryName;
 
 getCategoriesForLedgerEntry:
 SELECT *
 FROM category
-WHERE id IN
+WHERE name IN
     (
-        SELECT categoryId
+        SELECT categoryName
         FROM ledgerEntryCategory
         WHERE ledgerEntryId = :ledgerEntryId
     );
+
 
 removeAllCategoriesFromLedgerEntry:
 DELETE FROM ledgerEntryCategory
@@ -94,10 +109,9 @@ WHERE
 addCategory:
 INSERT OR REPLACE
 INTO category (
-    id,
     name,
     color
-) VALUES (:id, :name, :color);
+) VALUES (:name, :color);
 
 getAllCategories:
 SELECT *
@@ -108,12 +122,17 @@ SELECT *
 FROM category
 WHERE name LIKE '%' || :name || '%';
 
+getCategoryById:
+SELECT *
+FROM category
+WHERE name = :categoryName;
+
 deleteCategoryById:
 DELETE
 FROM category
-WHERE id = :categoryId;
+WHERE name = :categoryName;
 
 getCategoryUsedCount:
 SELECT COUNT(*) AS count
 FROM ledgerEntryCategory
-WHERE categoryId = :id;
+WHERE categoryName = :categoryName;
