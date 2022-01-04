@@ -127,7 +127,7 @@ SELECT *
 FROM category
 WHERE name = :categoryName;
 
-deleteCategoryById:
+deleteCategoryByName:
 DELETE
 FROM category
 WHERE name = :categoryName;

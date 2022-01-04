@@ -15,6 +15,7 @@ import com.hardiksachan.ledger.domain.repository.ITransactionRepository
 import com.squareup.sqldelight.Query
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
+import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
@@ -23,24 +24,8 @@ import java.util.*
 
 class TransactionDataSource(
     private val transactionQueries: TransactionContextQueries,
-    private val instrumentExpandedQueries: InstrumentExpandedQueries,
-    private val dispatcherProvider: IDispatcherProvider,
-    private val applicationScope: CoroutineScope
+    private val dispatcherProvider: IDispatcherProvider
 ) : ITransactionRepository {
-    fun modesFlow() = transactionQueries
-        .getAllModes()
-        .asFlow()
-        .mapToList(dispatcherProvider.IO)
-        .flowOn(dispatcherProvider.IO)
-        .shareIn(applicationScope, SharingStarted.Lazily)
-
-    fun categoriesFlow() = transactionQueries
-        .getAllCategories()
-        .asFlow()
-        .mapToList(dispatcherProvider.IO)
-        .flowOn(dispatcherProvider.IO)
-        .shareIn(applicationScope, SharingStarted.Lazily)
-
     // ---------- MODE ----------
     override suspend fun addMode(name: String, color: Int) {
         withContext(dispatcherProvider.IO) {
@@ -63,7 +48,7 @@ class TransactionDataSource(
             .mapModes()
 
     override suspend fun removeModeIfUnused(name: String) {
-        val count = transactionQueries.getModeUsedCount(id).executeAsOne()
+        val count = transactionQueries.getModeUsedCount(name).executeAsOne()
         if (count == 0L) {
             transactionQueries.deleteModeByName(name)
         }
@@ -75,7 +60,6 @@ class TransactionDataSource(
         withContext(dispatcherProvider.IO) {
             transactionQueries
                 .addCategory(
-                    UUID.randomUUID().toString(),
                     name,
                     color
                 )
@@ -92,10 +76,10 @@ class TransactionDataSource(
             .queryCategoryByName(q)
             .mapCategories()
 
-    override suspend fun removeCategoryIfUnused(id: BackendID) {
-        val count = transactionQueries.getCategoryUsedCount(id).executeAsOne()
+    override suspend fun removeCategoryIfUnused(name: String) {
+        val count = transactionQueries.getCategoryUsedCount(name).executeAsOne()
         if (count == 0L) {
-            transactionQueries.deleteCategoryById(id)
+            transactionQueries.deleteCategoryByName(name)
         }
         // TODO: what if category is used?
     }
@@ -122,7 +106,7 @@ class TransactionDataSource(
                         amount,
                         isDebit,
                         instrument.id,
-                        mode.id,
+                        mode.name,
                         remark,
                         createdAt.toString()
                     )
@@ -130,7 +114,7 @@ class TransactionDataSource(
                     transactionQueries
                         .addCategoryToLedgerEntry(
                             id,
-                            category.id
+                            category.name
                         )
                 }
 
@@ -140,8 +124,6 @@ class TransactionDataSource(
 
     override suspend fun modifyTransaction(transaction: Transaction) {
         transactionQueries.transaction {
-            transactionQueries.removeAllCategoriesFromLedgerEntry(transaction.id)
-            transactionQueries.deleteLedgerEntry(transaction.id)
             with (transaction) {
                 transactionQueries.insertLedgerEntry(
                     id,
@@ -149,7 +131,7 @@ class TransactionDataSource(
                     amount,
                     isDebit,
                     instrument.id,
-                    mode.id,
+                    mode.name,
                     remark,
                     createdAt.toString()
                 )
@@ -158,41 +140,33 @@ class TransactionDataSource(
                 transactionQueries
                     .addCategoryToLedgerEntry(
                         transaction.id,
-                        category.id
+                        category.name
                     )
             }
         }
     }
 
-    override fun getTransactions(): Flow<ResultWrapper<Exception, List<Transaction>>> {
-        val ledgerEntryFlow = transactionQueries
-            .getAllLedgerEntries()
+    override fun getTransactions(): Flow<ResultWrapper<Exception, List<Transaction>>> =
+        transactionQueries
+            .getAllFlatTransactions()
+            .mapFlatTransactions()
+
+    override fun getTransactionById(id: BackendID): Flow<ResultWrapper<Exception, Transaction>> =
+        transactionQueries
+            .getFlatTransactionById(id)
             .asFlow()
-            .mapToList()
-
-        val modesFlow = modesFlow()
-
-        val categoriesFlow = categoriesFlow()
-
-
-        combine(ledgerEntryFlow, modesFlow, categoriesFlow) { entries, modes, categories ->
-            entries.map { entry ->
-                Transaction(
-                    entry.id,
-                    entry.title,
-                    entry.amount,
-                    entry.isDebit,
-                    entry.ins
-                )
+            .mapToOne(dispatcherProvider.IO)
+            .map {
+                ResultWrapper.build { it.toDomain() }
             }
-        }
-    }
-    override fun getTransactionById(id: BackendID): Flow<ResultWrapper<Exception, Transaction>> {
-        TODO("Not yet implemented")
-    }
+            .catch { e ->
+                ResultWrapper.Failure(e)
+            }
+            .flowOn(dispatcherProvider.IO)
 
     override fun deleteTransaction(id: BackendID) {
-        TODO("Not yet implemented")
+        transactionQueries.removeAllCategoriesFromLedgerEntry(id)
+        transactionQueries.deleteLedgerEntry(id)
     }
 
     // --------- HELPERS ------------
@@ -205,6 +179,11 @@ class TransactionDataSource(
     private fun Query<DbCategory>.mapCategories() =
         mapQuery { categories ->
             categories.toDomain()
+        }
+
+    private fun Query<FlatTransaction>.mapFlatTransactions() =
+        mapQuery { flatTransactions ->
+            flatTransactions.toDomain()
         }
 
     private fun <T : Any, R> Query<T>.mapQuery(

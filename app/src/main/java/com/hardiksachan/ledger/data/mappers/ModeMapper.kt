@@ -4,7 +4,7 @@ import com.hardiksachan.ledger.data.local.Mode
 import com.hardiksachan.ledger.domain.model.Mode as ModeDomain
 
 fun Mode.toDomain() = ModeDomain(
-    id, name, color
+    name, color
 )
 
 fun List<Mode>.toDomain() = this.map { it.toDomain() }

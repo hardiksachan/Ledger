@@ -2,6 +2,10 @@ CREATE VIEW flatTransaction AS
     SELECT
         l.*,
         m.color AS modeColor,
+        i.name AS instrumentName,
+        i.openingBalance,
+        i.currBalance,
+        i.color AS instrumentColor,
         GROUP_CONCAT(
             CONCAT_WS('/?/', c.name, c.color) || ';'
         ) AS categoryJson

@@ -18,7 +18,7 @@ interface ITransactionRepository {
 
     fun searchModes(q: String): Flow<ResultWrapper<Exception, List<Mode>>>
 
-    suspend fun removeModeIfUnused(id: BackendID)
+    suspend fun removeModeIfUnused(name: String)
 
     // Category
     suspend fun addCategory(
@@ -30,7 +30,7 @@ interface ITransactionRepository {
 
     fun searchCategories(q: String): Flow<ResultWrapper<Exception, List<Category>>>
 
-    suspend fun removeCategoryIfUnused(id: BackendID)
+    suspend fun removeCategoryIfUnused(name: String)
 
     // Transaction
     suspend fun insertTransaction(
