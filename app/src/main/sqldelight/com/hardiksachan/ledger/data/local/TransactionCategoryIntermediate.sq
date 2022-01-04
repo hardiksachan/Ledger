@@ -29,3 +29,7 @@ WHERE id IN
         WHERE ledgerEntryId = :ledgerEntryId
     );
 
+removeAllCategoriesFromLedgerEntry:
+DELETE FROM ledgerEntryCategory
+WHERE
+    ledgerEntryId = :ledgerEntryId;

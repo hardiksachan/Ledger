@@ -25,3 +25,8 @@ deleteModeById:
 DELETE
 FROM mode
 WHERE id = :modeId;
+
+getModeUsedCount:
+SELECT COUNT(*) AS count
+FROM ledgerEntry
+WHERE modeId = :id;

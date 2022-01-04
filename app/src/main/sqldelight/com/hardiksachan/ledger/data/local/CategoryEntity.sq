@@ -25,3 +25,8 @@ deleteCategoryById:
 DELETE
 FROM category
 WHERE id = :categoryId;
+
+getCategoryUsedCount:
+SELECT COUNT(*) AS count
+FROM ledgerEntryCategory
+WHERE categoryId = :id;
