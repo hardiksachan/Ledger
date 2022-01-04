@@ -4,20 +4,18 @@ CREATE TABLE ledgerEntry(
     amount INTEGER NOT NULL,
     isDebit INTEGER AS Boolean NOT NULL,
     instrumentId TEXT NOT NULL,
-    categoryIds TEXT AS List<String> NOT NULL,
     modeId TEXT NOT NULL,
     remark TEXT NOT NULL,
     createdAt TEXT NOT NULL
 );
 
-insertTransaction:
+insertLedgerEntry:
 INSERT OR REPLACE INTO ledgerEntry (
     id,
     title,
     amount,
     isDebit,
     instrumentId,
-    categoryIds,
     modeId,
     remark,
     createdAt
@@ -27,22 +25,21 @@ INSERT OR REPLACE INTO ledgerEntry (
     :amount,
     :isDebit,
     :instrumentId,
-    :categoryIds,
     :modeId,
     :remark,
     :createdAt
 );
 
-getAllTransactions:
+getAllLedgerEntries:
 SELECT *
 FROM ledgerEntry
 ORDER BY createdAt DESC;
 
-getTransactionById:
+getLedgerEntryById:
 SELECT *
 FROM ledgerEntry
 WHERE id = :id;
 
-deleteTransaction:
+deleteLedgerEntry:
 DELETE FROM ledgerEntry
 WHERE id = :id;

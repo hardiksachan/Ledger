@@ -1,0 +1,31 @@
+CREATE TABLE ledgerEntryCategory(
+    ledgerEntryId TEXT NOT NULL,
+    categoryId TEXT NOT NULL
+);
+
+addCategoryToLedgerEntry:
+INSERT OR IGNORE
+INTO ledgerEntryCategory(
+    ledgerEntryId,
+    categoryId
+) VALUES (
+    :ledgerEntryId,
+    :categoryId
+);
+
+removeCategoryFromLedgerEntry:
+DELETE FROM ledgerEntryCategory
+WHERE
+    ledgerEntryId = :ledgerEntryId AND
+    categoryId = :categoryId;
+
+getCategoriesForLedgerEntry:
+SELECT *
+FROM category
+WHERE id IN
+    (
+        SELECT categoryId
+        FROM ledgerEntryCategory
+        WHERE ledgerEntryId = :ledgerEntryId
+    );
+
