@@ -122,7 +122,7 @@ SELECT *
 FROM category
 WHERE name LIKE '%' || :name || '%';
 
-getCategoryById:
+getCategoryByName:
 SELECT *
 FROM category
 WHERE name = :categoryName;
