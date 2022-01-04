@@ -1,0 +1,4 @@
+CREATE TABLE ledgerEntryCategory(
+    ledgerEntryId TEXT NOT NULL,
+    categoryId TEXT NOT NULL
+);

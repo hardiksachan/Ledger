@@ -3,30 +3,3 @@ CREATE TABLE mode(
     name TEXT NOT NULL,
     color INTEGER AS Int NOT NULL
 );
-
-addMode:
-INSERT OR REPLACE
-INTO mode (
-    id,
-    name,
-    color
-) VALUES (:id, :name, :color);
-
-getAllModes:
-SELECT *
-FROM mode;
-
-queryModeByName:
-SELECT *
-FROM mode
-WHERE name LIKE '%' || :name || '%';
-
-deleteModeById:
-DELETE
-FROM mode
-WHERE id = :modeId;
-
-getModeUsedCount:
-SELECT COUNT(*) AS count
-FROM ledgerEntry
-WHERE modeId = :id;

@@ -3,30 +3,3 @@ CREATE TABLE category(
     name TEXT NOT NULL,
     color INTEGER AS Int NOT NULL
 );
-
-addCategory:
-INSERT OR REPLACE
-INTO category (
-    id,
-    name,
-    color
-) VALUES (:id, :name, :color);
-
-getAllCategories:
-SELECT *
-FROM category;
-
-queryCategoryByName:
-SELECT *
-FROM category
-WHERE name LIKE '%' || :name || '%';
-
-deleteCategoryById:
-DELETE
-FROM category
-WHERE id = :categoryId;
-
-getCategoryUsedCount:
-SELECT COUNT(*) AS count
-FROM ledgerEntryCategory
-WHERE categoryId = :id;

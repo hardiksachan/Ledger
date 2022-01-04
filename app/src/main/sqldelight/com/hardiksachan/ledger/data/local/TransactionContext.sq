@@ -1,0 +1,119 @@
+insertLedgerEntry:
+INSERT OR REPLACE INTO ledgerEntry (
+    id,
+    title,
+    amount,
+    isDebit,
+    instrumentId,
+    modeId,
+    remark,
+    createdAt
+) VALUES (
+    :id,
+    :title,
+    :amount,
+    :isDebit,
+    :instrumentId,
+    :modeId,
+    :remark,
+    :createdAt
+);
+
+getAllLedgerEntries:
+SELECT *
+FROM ledgerEntry
+ORDER BY createdAt DESC;
+
+getLedgerEntryById:
+SELECT *
+FROM ledgerEntry
+WHERE id = :id;
+
+deleteLedgerEntry:
+DELETE FROM ledgerEntry
+WHERE id = :id;
+
+addMode:
+INSERT OR REPLACE
+INTO mode (
+    id,
+    name,
+    color
+) VALUES (:id, :name, :color);
+
+getAllModes:
+SELECT *
+FROM mode;
+
+queryModeByName:
+SELECT *
+FROM mode
+WHERE name LIKE '%' || :name || '%';
+
+deleteModeById:
+DELETE
+FROM mode
+WHERE id = :modeId;
+
+getModeUsedCount:
+SELECT COUNT(*) AS count
+FROM ledgerEntry
+WHERE modeId = :id;
+
+addCategoryToLedgerEntry:
+INSERT OR IGNORE
+INTO ledgerEntryCategory(
+    ledgerEntryId,
+    categoryId
+) VALUES (
+    :ledgerEntryId,
+    :categoryId
+);
+
+removeCategoryFromLedgerEntry:
+DELETE FROM ledgerEntryCategory
+WHERE
+    ledgerEntryId = :ledgerEntryId AND
+    categoryId = :categoryId;
+
+getCategoriesForLedgerEntry:
+SELECT *
+FROM category
+WHERE id IN
+    (
+        SELECT categoryId
+        FROM ledgerEntryCategory
+        WHERE ledgerEntryId = :ledgerEntryId
+    );
+
+removeAllCategoriesFromLedgerEntry:
+DELETE FROM ledgerEntryCategory
+WHERE
+    ledgerEntryId = :ledgerEntryId;
+
+addCategory:
+INSERT OR REPLACE
+INTO category (
+    id,
+    name,
+    color
+) VALUES (:id, :name, :color);
+
+getAllCategories:
+SELECT *
+FROM category;
+
+queryCategoryByName:
+SELECT *
+FROM category
+WHERE name LIKE '%' || :name || '%';
+
+deleteCategoryById:
+DELETE
+FROM category
+WHERE id = :categoryId;
+
+getCategoryUsedCount:
+SELECT COUNT(*) AS count
+FROM ledgerEntryCategory
+WHERE categoryId = :id;
