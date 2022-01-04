@@ -66,4 +66,7 @@ dependencies {
 
     // kotlinx-datetime
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:$datetime_version"
+
+    // sqldelight coroutines extension
+    implementation "com.squareup.sqldelight:coroutines-extensions-jvm:$sqldelight_version"
 }
