@@ -72,6 +72,15 @@ dependencies {
     testImplementation "com.squareup.sqldelight:sqlite-driver:$sqldelight_version"
     implementation "com.squareup.sqldelight:coroutines-extensions-jvm:$sqldelight_version"
 
+    // compose nav
+    implementation "androidx.navigation:navigation-compose:$nav_compose_version"
+    implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist"
+
+    // koin
+    implementation "io.insert-koin:koin-core:$koin_version"
+    implementation "io.insert-koin:koin-android:$koin_version"
+    implementation "io.insert-koin:koin-androidx-compose:$koin_version"
+
     // JUnit5
     testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
