@@ -14,10 +14,10 @@ fun FlatTransaction.toDomain() = Transaction(
     isDebit,
     Instrument(
         instrumentId,
-        instrumentName,
-        openingBalance,
+        instrumentName!!,
+        openingBalance!!,
         currBalance?.toLong() ?: 0L,
-        instrumentColor
+        instrumentColor!!
     ),
     categoryJson.split(";").dropLast(1).map { single ->
         val props = single.split("/?/")
@@ -28,7 +28,7 @@ fun FlatTransaction.toDomain() = Transaction(
     },
     Mode(
         modeName,
-        modeColor
+        modeColor!!
     ),
     remark,
     Instant.parse(createdAt)
