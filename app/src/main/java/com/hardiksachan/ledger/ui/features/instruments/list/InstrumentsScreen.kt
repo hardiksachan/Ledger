@@ -34,10 +34,13 @@ fun InstrumentsScreen(
 
         when (val res = instruments.value) {
             is ResultWrapper.Failure -> Text(text = "error:\n${res.error}")
-            is ResultWrapper.Success -> InstrumentsList(
-                instrumentList = res.result,
-                onUserClick = { viewModel.onInstrumentClicked(it) }
-            )
+            is ResultWrapper.Success -> {
+                Text(res.toString())
+//                InstrumentsList(
+//                    instrumentList = res.result,
+//                    onUserClick = { viewModel.onInstrumentClicked(it) }
+//                )
+            }
         }
     }
 }

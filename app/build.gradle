@@ -53,6 +53,12 @@ android {
     }
 }
 
+//sqldelight {
+//    Database {
+//        dialect = "postgresql"
+//    }
+//}
+
 dependencies {
     // Default
     implementation 'androidx.core:core-ktx:1.7.0'

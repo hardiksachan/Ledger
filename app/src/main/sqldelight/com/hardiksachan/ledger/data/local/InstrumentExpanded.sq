@@ -5,7 +5,7 @@ CREATE VIEW instrumentExp AS
         i.openingBalance AS openingBalance,
         i.color AS color,
         i.openingBalance +
-            SUM(l.amount * IIF(l.isDebit, -1, 1))
+            SUM(l.amount * CASE WHEN l.isDebit THEN -1 ELSE 1 END)
             AS currBalance
     FROM instrumentBase AS i
     LEFT JOIN ledgerEntry AS l
