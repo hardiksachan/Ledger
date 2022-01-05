@@ -8,7 +8,7 @@ CREATE VIEW instrumentExp AS
             SUM(l.amount * IIF(l.isDebit, -1, 1))
             AS currBalance
     FROM instrumentBase AS i
-    JOIN ledgerEntry AS l
+    LEFT JOIN ledgerEntry AS l
         ON l.instrumentId = i.id;
 
 getAllInstruments:

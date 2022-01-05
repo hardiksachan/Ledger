@@ -78,6 +78,12 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 
+    // coroutines test extensions
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0"
+
+    // turbine - flow tests
+    testImplementation 'app.cash.turbine:turbine:0.7.0'
+
     // Truth
     testImplementation "com.google.truth:truth:$truth_version"
 
