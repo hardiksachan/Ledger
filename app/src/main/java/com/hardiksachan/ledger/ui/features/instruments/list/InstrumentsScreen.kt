@@ -1,23 +1,25 @@
 package com.hardiksachan.ledger.ui.features.instruments.list
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Surface
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hardiksachan.ledger.R
 import com.hardiksachan.ledger.common.ResultWrapper
 import com.hardiksachan.ledger.domain.model.Instrument
@@ -25,8 +27,8 @@ import com.hardiksachan.ledger.presentation_logic.instruments.list.InstrumentsVi
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.NoParams
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.ScreenDestination
 import com.hardiksachan.ledger.ui.features.widgets.ScreenTitle
-import com.hardiksachan.ledger.ui.features.widgets.Table
 import com.hardiksachan.ledger.ui.theme.LedgerTheme
+import com.hardiksachan.ledger.ui.utils.toColor
 import com.hardiksachan.ledger.ui.utils.toRupee
 
 object InstrumentsScreen : ScreenDestination<NoParams>(pathRoot = "instrumentsScreen")
@@ -38,13 +40,17 @@ fun InstrumentsScreen(
     val instruments = viewModel.instruments
         .collectAsState(initial = ResultWrapper.Success(emptyList()))
 
-    Column(Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+    ) {
         ScreenTitle(text = stringResource(R.string.instruments_screen_title))
 
         when (val res = instruments.value) {
             is ResultWrapper.Failure -> Text(text = "error:\n${res.error}")
             is ResultWrapper.Success -> {
-                InstrumentsTable(
+                InstrumentsList(
                     instrumentList = res.result,
                     onUserClick = { viewModel.onInstrumentClicked(it) })
             }
@@ -53,89 +59,88 @@ fun InstrumentsScreen(
 }
 
 @Composable
-private fun InstrumentsTable(
+private fun InstrumentsList(
     instrumentList: List<Instrument>,
     onUserClick: (Instrument) -> Unit
 ) {
-    val headerCellTitle: @Composable (Int) -> Unit = { index ->
-        val value = when (index) {
-            0 -> "Instrument"
-            1 -> "Opening Balance"
-            2 -> "Current Balance"
-            else -> ""
-        }
-
-        Text(
-            text = value,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.Black,
-            textDecoration = TextDecoration.Underline
-        )
-    }
-
-    val cellWidth: (Int) -> Dp = { index ->
-        when (index) {
-            0 -> 150.dp
-            else -> 190.dp
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(instrumentList) { instrument ->
+            InstrumentListItem(
+                instrument = instrument,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {}
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
+}
 
-    val cellText: @Composable (Int, Instrument) -> Unit = { index, item ->
-        val value = when (index) {
-            0 -> item.name
-            1 -> item.openingBalance.toRupee()
-            2 -> item.currBalance.toRupee()
-            else -> ""
+@Composable
+private fun InstrumentListItem(
+    instrument: Instrument,
+    modifier: Modifier = Modifier,
+    cornerRadius: Dp = 10.dp,
+    onUserClick: (Instrument) -> Unit
+) {
+    Box(
+        modifier = modifier
+    ) {
+        Text(instrument.name)
+        Canvas(modifier = Modifier.matchParentSize()) {
+            drawRoundRect(
+                color = instrument.color.toColor(),
+                cornerRadius = CornerRadius(cornerRadius.toPx())
+            )
+
         }
-
-        Text(
-            text = value,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .padding(end = 32.dp)
+        ) {
+            Text(
+                text = instrument.name,
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = instrument.currBalance.toRupee(),
+                style = MaterialTheme.typography.body1,
+                color = MaterialTheme.colors.onSurface,
+                maxLines = 10,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        IconButton(
+            onClick = { },
+            modifier = Modifier.align(Alignment.BottomEnd)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete note",
+                tint = MaterialTheme.colors.onSurface
+            )
+        }
     }
-
-    Table(
-        columnCount = 3,
-        cellWidth = cellWidth,
-        data = instrumentList,
-        modifier = Modifier.verticalScroll(rememberScrollState()),
-        headerCellContent = headerCellTitle,
-        cellContent = cellText
-    )
 }
 
 @Preview
 @Composable
 fun InstrumentTablePreview() {
     LedgerTheme {
-        Surface {
-            InstrumentsTable(
-                instrumentList = listOf(
-                    Instrument(
-                        id = "001",
-                        name = "Wallet",
-                        openingBalance = 10_000_00L,
-                        currBalance = 8_000_00L,
-                        color = 5
-                    ),
-                    Instrument(
-                        id = "002",
-                        name = "Paytm",
-                        openingBalance = 1_000_00L,
-                        currBalance = 3_000_00L,
-                        color = 3
-                    )
-                ),
-                onUserClick = {}
-            )
-        }
+        InstrumentListItem(
+            instrument = Instrument(
+                id = "001",
+                name = "Wallet",
+                openingBalance = 10_000_00L,
+                currBalance = 8_000_00L,
+                color = 1
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            onUserClick = {}
+        )
     }
 }
