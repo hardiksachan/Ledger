@@ -5,11 +5,15 @@ CREATE VIEW instrumentExp AS
         i.openingBalance AS openingBalance,
         i.color AS color,
         i.openingBalance +
-            SUM(l.amount * CASE WHEN l.isDebit THEN -1 ELSE 1 END)
+            IFNULL(lm.netAmount, 0)
             AS currBalance
     FROM instrumentBase AS i
-    LEFT JOIN ledgerEntry AS l
-        ON l.instrumentId = i.id;
+    LEFT JOIN (
+        SELECT l.instrumentId, SUM(l.amount * CASE WHEN l.isDebit THEN -1 ELSE 1 END) AS netAmount
+        FROM ledgerEntry AS l
+        GROUP BY l.instrumentId
+    ) AS lm
+        ON lm.instrumentId = i.id;
 
 getAllInstruments:
 SELECT *
