@@ -61,15 +61,21 @@ fun InstrumentListScreen(
         },
         bottomBar = bottomBar
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .padding(horizontal = 16.dp)) {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
             when (val res = instruments.value) {
                 is ResultWrapper.Failure -> Text(text = "error:\n${res.error}")
                 is ResultWrapper.Success -> {
                     InstrumentsList(
                         instrumentList = res.result,
-                        onUserClick = { })
+                        onUserClick = { },
+                        onDeleteClicked = { instrument ->
+                            viewModel.onEvent(InstrumentsListEvents.OnDeletePressed(instrument.id))
+                        }
+                    )
                 }
             }
         }
@@ -79,15 +85,18 @@ fun InstrumentListScreen(
 @Composable
 private fun InstrumentsList(
     instrumentList: List<Instrument>,
-    onUserClick: (Instrument) -> Unit
+    onUserClick: (Instrument) -> Unit,
+    onDeleteClicked: (Instrument) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(instrumentList) { instrument ->
             InstrumentListItem(
                 instrument = instrument,
                 modifier = Modifier
-                    .fillMaxWidth()
-            ) {}
+                    .fillMaxWidth(),
+                onDeleteClicked = { onDeleteClicked(instrument) },
+                onUserClick = { }
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -98,7 +107,8 @@ private fun InstrumentListItem(
     instrument: Instrument,
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 10.dp,
-    onUserClick: (Instrument) -> Unit
+    onUserClick: (Instrument) -> Unit,
+    onDeleteClicked: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -133,7 +143,7 @@ private fun InstrumentListItem(
             )
         }
         IconButton(
-            onClick = { },
+            onClick = { onDeleteClicked() },
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             Icon(
@@ -158,7 +168,8 @@ fun InstrumentTablePreview() {
                 color = 1
             ),
             modifier = Modifier.fillMaxWidth(),
-            onUserClick = {}
+            onUserClick = {},
+            onDeleteClicked = {}
         )
     }
 }

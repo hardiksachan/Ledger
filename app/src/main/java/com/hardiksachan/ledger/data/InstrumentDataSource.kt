@@ -62,6 +62,12 @@ class InstrumentDataSource(
             }
             .flowOn(dispatcherProvider.IO)
 
+    override suspend fun deleteInstrumentAssumingUnused(id: BackendID) {
+        val count = baseQueries.getUsageCount(id).executeAsOne()
+        if (count != 0L) throw IllegalStateException("Instrument is used in $count places")
+        baseQueries.deleteInstrumentIfUnused(id)
+    }
+
     private fun Query<InstrumentExp>.mapQueryToResultWrapperFlow() =
         this
             .asFlow()

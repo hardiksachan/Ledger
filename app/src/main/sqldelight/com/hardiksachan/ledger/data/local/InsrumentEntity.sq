@@ -24,3 +24,17 @@ INSERT OR REPLACE INTO instrumentBase (
     color
 ) VALUES (:id,:name,:openingBalance,:color);
 
+getUsageCount:
+SELECT COUNT(*)
+FROM ledgerEntry
+WHERE ledgerEntry.instrumentId = :instrumentId;
+
+deleteInstrumentIfUnused:
+DELETE FROM instrumentBase
+WHERE id = :instrumentId
+    AND NOT EXISTS (
+        SELECT NULL
+        FROM ledgerEntry
+        WHERE ledgerEntry.instrumentId = :instrumentId
+    );
+
