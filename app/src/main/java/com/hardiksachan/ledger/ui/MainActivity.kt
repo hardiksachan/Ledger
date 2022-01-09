@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.hardiksachan.ledger.domain.repository.IInstrumentRepository
 import com.hardiksachan.ledger.presentation_logic.AppViewModel
 import com.hardiksachan.ledger.ui.base.savestate.BundleStateSaver
 import com.hardiksachan.ledger.ui.theme.LedgerTheme
@@ -27,8 +26,7 @@ class MainActivity : ComponentActivity() {
                 saver = BundleStateSaver.saver,
             ) { BundleStateSaver(Bundle()) }
 
-            val appVm: AppViewModel = get { parametersOf(stateSaver) }
-            get<IInstrumentRepository> { parametersOf(stateSaver) }
+            get<AppViewModel> { parametersOf(stateSaver) }
 
             LedgerTheme {
                 AppLayout()

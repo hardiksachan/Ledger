@@ -33,7 +33,7 @@ import com.hardiksachan.ledger.ui.theme.LocalMotionTransition
 import org.koin.androidx.compose.get
 import org.koin.core.parameter.parametersOf
 
-private val startDestinationPath = InstrumentsSubgraph.declaredPath
+private val startDestinationPath = BottomNavItem.Instruments.pathRoot
 
 @ExperimentalAnimationApi
 @Composable
@@ -143,12 +143,12 @@ fun BottomBar(navController: NavHostController) {
             BottomNavigationItem(
                 icon = { Icon(screen.icon, stringResource(screen.title)) },
                 label = { Text(stringResource(screen.title)) },
-                selected = bottomBarSelection == route,
+                selected = bottomBarSelection.split("/")[0] == route.split("/")[0],
                 onClick = {
                     appVm.bottomBarSelection.value = route
                     navController.navigate(route) {
                         popUpTo(navController.graph.startDestinationId)
-                        launchSingleTop = true
+//                        launchSingleTop = true
                     }
                 }
             )
