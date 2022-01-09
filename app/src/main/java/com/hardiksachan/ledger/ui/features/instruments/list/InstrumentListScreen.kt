@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.hardiksachan.ledger.R
 import com.hardiksachan.ledger.common.ResultWrapper
 import com.hardiksachan.ledger.domain.model.Instrument
+import com.hardiksachan.ledger.presentation_logic.instruments.list.InstrumentsListEvents
 import com.hardiksachan.ledger.presentation_logic.instruments.list.InstrumentsViewModel
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.NoParams
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.ScreenDestination
@@ -28,10 +30,10 @@ import com.hardiksachan.ledger.ui.theme.LedgerTheme
 import com.hardiksachan.ledger.ui.utils.toColor
 import com.hardiksachan.ledger.ui.utils.toRupee
 
-object InstrumentsScreen : ScreenDestination<NoParams>(pathRoot = "instrumentsScreen")
+object InstrumentListScreen : ScreenDestination<NoParams>(pathRoot = "instrumentListScreen")
 
 @Composable
-fun InstrumentsScreen(
+fun InstrumentListScreen(
     viewModel: InstrumentsViewModel,
     bottomBar: @Composable () -> Unit
 ) {
@@ -41,6 +43,16 @@ fun InstrumentsScreen(
     Scaffold(
         Modifier
             .fillMaxSize(),
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.onEvent(InstrumentsListEvents.OnAddInstrumentPressed)
+                },
+                backgroundColor = MaterialTheme.colors.primary
+            ) {
+                Icon(Icons.Filled.Add, "Add instrument")
+            }
+        },
         topBar = {
             ScreenTitle(
                 text = stringResource(R.string.instruments_screen_title),
@@ -55,7 +67,7 @@ fun InstrumentsScreen(
                 is ResultWrapper.Success -> {
                     InstrumentsList(
                         instrumentList = res.result,
-                        onUserClick = { viewModel.onInstrumentClicked(it) })
+                        onUserClick = { })
                 }
             }
         }

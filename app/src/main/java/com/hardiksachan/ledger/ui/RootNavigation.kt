@@ -23,23 +23,25 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.hardiksachan.ledger.R
 import com.hardiksachan.ledger.presentation_logic.AppViewModel
+import com.hardiksachan.ledger.presentation_logic.instruments.add.AddInstrumentViewModel
 import com.hardiksachan.ledger.presentation_logic.instruments.list.InstrumentsViewModel
-import com.hardiksachan.ledger.ui.base.getEnterTransition
-import com.hardiksachan.ledger.ui.base.getExitTransition
-import com.hardiksachan.ledger.ui.base.getPopEnterTransition
-import com.hardiksachan.ledger.ui.base.getPopExitTransition
+import com.hardiksachan.ledger.ui.base.*
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.NoParams
-import com.hardiksachan.ledger.ui.base.scopednav.navigation.getWith
-import com.hardiksachan.ledger.ui.base.scopednav.navigation.scopedComposable
-import com.hardiksachan.ledger.ui.features.instruments.list.InstrumentsScreen
+import com.hardiksachan.ledger.ui.base.scopednav.navigation.doubleScopedComposable
+import com.hardiksachan.ledger.ui.base.scopednav.navigation.scopedNavigation
+import com.hardiksachan.ledger.ui.features.instruments.InstrumentsSubgraph
+import com.hardiksachan.ledger.ui.features.instruments.add.AddInstrumentScreen
+import com.hardiksachan.ledger.ui.features.instruments.list.InstrumentListScreen
 import com.hardiksachan.ledger.ui.theme.LocalMotionTransition
 import org.koin.androidx.compose.get
+import org.koin.core.parameter.parametersOf
 
-private val startDestinationPath = InstrumentsScreen.declaredPath
+private val startDestinationPath = InstrumentsSubgraph.declaredPath
 
 @ExperimentalAnimationApi
 @Composable
 fun RootNavigation(navController: NavHostController) {
+    val appVm: AppViewModel = get()
     val motionTransition = LocalMotionTransition.current
 
     AnimatedNavHost(
@@ -58,28 +60,54 @@ fun RootNavigation(navController: NavHostController) {
             getPopExitTransition(motionTransition)
         },
     ) {
-        scopedComposable(
-            InstrumentsScreen,
-        ) { _, scope ->
-            val navigate = { id: Int ->
-                // TODO
+        scopedNavigation(InstrumentsSubgraph) { nestedNavGraph ->
+
+            doubleScopedComposable(
+                navController, nestedNavGraph, InstrumentListScreen
+            ) { _, _, scope ->
+                val navToAdd: () -> Unit = {
+                    navController.navigate(
+                        AddInstrumentScreen.buildRoute(NoParams, NavTransition.FadeThrough)
+                    )
+                }
+
+                val vm = scope.get<InstrumentsViewModel> {
+                    parametersOf(navToAdd)
+                }
+
+                InstrumentListScreen(viewModel = vm) {
+                    BottomBar(navController = navController)
+                }
             }
-            val viewModel = scope.getWith<InstrumentsViewModel>(navigate)
-            InstrumentsScreen(
-                viewModel = viewModel,
-                bottomBar = { BottomBar(navController = navController) }
-            )
+
+            doubleScopedComposable(
+                navController, nestedNavGraph, AddInstrumentScreen
+            ) { navEntry, _, scope ->
+                val onDone: () -> Unit = {
+                    navController.navigateUp()
+                }
+
+                val vm = scope.get<AddInstrumentViewModel> {
+                    parametersOf(navEntry.savedStateHandle, onDone)
+                }
+
+                AddInstrumentScreen(vm) {
+                    BottomBar(navController = navController)
+                }
+            }
         }
     }
 }
 
 private fun navToTopDestination(
     path: String,
-    navController: NavController
+    navController: NavController,
+    appViewModel: AppViewModel,
 ) {
     navController.navigate(path) {
         popUpTo(navController.graph.startDestinationId)
     }
+    appViewModel.onBottomDestinationChanged(path)
 }
 
 private fun updateStateIfStartDestination(destination: NavDestination?, vm: AppViewModel) {
@@ -136,8 +164,8 @@ sealed class BottomNavItem(
     val icon: ImageVector,
 ) {
     object Instruments : BottomNavItem(
-        InstrumentsScreen.declaredPath,
-        InstrumentsScreen.buildRoute(NoParams),
+        InstrumentsSubgraph.declaredPath,
+        InstrumentsSubgraph.buildRoute(NoParams),
         R.string.instruments_screen_title,
         Icons.Filled.List,
     )

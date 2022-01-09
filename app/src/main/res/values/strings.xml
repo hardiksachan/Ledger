@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Ledger</string>
     <string name="instruments_screen_title">Instruments</string>
+    <string name="add_instrument_screen_title">Add Instrument</string>
 </resources>
