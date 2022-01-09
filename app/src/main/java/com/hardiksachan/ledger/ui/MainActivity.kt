@@ -11,8 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.hardiksachan.ledger.domain.repository.IInstrumentRepository
+import com.hardiksachan.ledger.presentation_logic.AppViewModel
 import com.hardiksachan.ledger.ui.base.savestate.BundleStateSaver
 import com.hardiksachan.ledger.ui.theme.LedgerTheme
+import org.koin.androidx.compose.get
+import org.koin.core.parameter.parametersOf
 
 private const val StateSaverKey = "GlobalStateSaverKey"
 
@@ -27,9 +31,8 @@ class MainActivity : ComponentActivity() {
                 saver = BundleStateSaver.saver,
             ) { BundleStateSaver(Bundle()) }
 
-//            val appVm: AppViewModel = get { parametersOf(stateSaver) }
-
-//            get<IInstrumentRepository> { parametersOf(stateSaver) }
+            val appVm: AppViewModel = get { parametersOf(stateSaver) }
+            get<IInstrumentRepository> { parametersOf(stateSaver) }
 
             LedgerTheme {
                 AppLayout()
@@ -47,7 +50,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppLayout() {
     val navController = rememberAnimatedNavController()
-    Scaffold() { innerPadding ->
+    Scaffold(bottomBar = { BottomBar(navController) }) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             RootNavigation(navController)
         }
