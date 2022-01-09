@@ -4,12 +4,9 @@ package com.hardiksachan.ledger.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Payment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -127,7 +124,9 @@ private fun NavDestination.getRootGraph(): NavGraph? {
 @Composable
 fun BottomBar(navController: NavHostController) {
     val appVm: AppViewModel = get()
-    BottomNavigation {
+    BottomNavigation(
+        backgroundColor = MaterialTheme.colors.background
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val bottomBarSelection: String by appVm.bottomBarSelection.collectAsState()
 
@@ -167,6 +166,6 @@ sealed class BottomNavItem(
         InstrumentsSubgraph.declaredPath,
         InstrumentsSubgraph.buildRoute(NoParams),
         R.string.instruments_screen_title,
-        Icons.Filled.List,
+        Icons.Filled.Payment,
     )
 }

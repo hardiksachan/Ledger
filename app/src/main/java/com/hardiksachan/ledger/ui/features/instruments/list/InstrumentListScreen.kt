@@ -60,8 +60,10 @@ fun InstrumentListScreen(
             )
         },
         bottomBar = bottomBar
-    ) {
-        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ) { innerPadding ->
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .padding(horizontal = 16.dp)) {
             when (val res = instruments.value) {
                 is ResultWrapper.Failure -> Text(text = "error:\n${res.error}")
                 is ResultWrapper.Success -> {

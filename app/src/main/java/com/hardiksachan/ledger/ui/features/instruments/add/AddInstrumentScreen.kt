@@ -65,7 +65,7 @@ fun AddInstrumentScreen(
             Row {
                 ScreenTitleWithIcon(
                     text = stringResource(R.string.add_instrument_screen_title),
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier,
                     Icon = {
                         Icon(Icons.Filled.Close, contentDescription = "Cancel")
                     }
@@ -74,9 +74,10 @@ fun AddInstrumentScreen(
                 }
             }
         },
-    ) {
+    ) { innerPadding ->
         Column(
             modifier = Modifier
+                .padding(innerPadding)
                 .fillMaxSize()
                 .background(backgroundAnimatable.value)
                 .padding(16.dp)
