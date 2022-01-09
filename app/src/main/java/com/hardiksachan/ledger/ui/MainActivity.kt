@@ -4,12 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.hardiksachan.ledger.domain.repository.IInstrumentRepository
 import com.hardiksachan.ledger.presentation_logic.AppViewModel
@@ -50,9 +46,5 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppLayout() {
     val navController = rememberAnimatedNavController()
-    Scaffold(bottomBar = { BottomBar(navController) }) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            RootNavigation(navController)
-        }
-    }
+    RootNavigation(navController)
 }

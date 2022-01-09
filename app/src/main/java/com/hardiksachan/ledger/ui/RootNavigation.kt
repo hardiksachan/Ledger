@@ -65,7 +65,10 @@ fun RootNavigation(navController: NavHostController) {
                 // TODO
             }
             val viewModel = scope.getWith<InstrumentsViewModel>(navigate)
-            InstrumentsScreen(viewModel)
+            InstrumentsScreen(
+                viewModel = viewModel,
+                bottomBar = { BottomBar(navController = navController) }
+            )
         }
     }
 }

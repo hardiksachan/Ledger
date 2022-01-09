@@ -4,10 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
@@ -35,24 +32,31 @@ object InstrumentsScreen : ScreenDestination<NoParams>(pathRoot = "instrumentsSc
 
 @Composable
 fun InstrumentsScreen(
-    viewModel: InstrumentsViewModel
+    viewModel: InstrumentsViewModel,
+    bottomBar: @Composable () -> Unit
 ) {
     val instruments = viewModel.instruments
         .collectAsState(initial = ResultWrapper.Success(emptyList()))
 
-    Column(
+    Scaffold(
         Modifier
-            .fillMaxSize()
-            .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+            .fillMaxSize(),
+        topBar = {
+            ScreenTitle(
+                text = stringResource(R.string.instruments_screen_title),
+                modifier = Modifier.padding(16.dp)
+            )
+        },
+        bottomBar = bottomBar
     ) {
-        ScreenTitle(text = stringResource(R.string.instruments_screen_title))
-
-        when (val res = instruments.value) {
-            is ResultWrapper.Failure -> Text(text = "error:\n${res.error}")
-            is ResultWrapper.Success -> {
-                InstrumentsList(
-                    instrumentList = res.result,
-                    onUserClick = { viewModel.onInstrumentClicked(it) })
+        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+            when (val res = instruments.value) {
+                is ResultWrapper.Failure -> Text(text = "error:\n${res.error}")
+                is ResultWrapper.Success -> {
+                    InstrumentsList(
+                        instrumentList = res.result,
+                        onUserClick = { viewModel.onInstrumentClicked(it) })
+                }
             }
         }
     }
