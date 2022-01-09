@@ -6,6 +6,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,6 +30,7 @@ import com.hardiksachan.ledger.ui.base.scopednav.navigation.scopedNavigation
 import com.hardiksachan.ledger.ui.features.instruments.InstrumentsSubgraph
 import com.hardiksachan.ledger.ui.features.instruments.add.AddInstrumentScreen
 import com.hardiksachan.ledger.ui.features.instruments.list.InstrumentListScreen
+import com.hardiksachan.ledger.ui.features.transactions.TransactionsSubgraph
 import com.hardiksachan.ledger.ui.theme.LocalMotionTransition
 import org.koin.androidx.compose.get
 import org.koin.core.parameter.parametersOf
@@ -131,8 +133,8 @@ fun BottomBar(navController: NavHostController) {
         val bottomBarSelection: String by appVm.bottomBarSelection.collectAsState()
 
         val items = listOf(
+            BottomNavItem.Transactions,
             BottomNavItem.Instruments,
-            // TODO: add more items
         )
 
         updateStateIfStartDestination(navBackStackEntry?.destination, appVm)
@@ -147,7 +149,7 @@ fun BottomBar(navController: NavHostController) {
                 onClick = {
                     appVm.bottomBarSelection.value = route
                     navController.navigate(route) {
-                        popUpTo(navController.graph.startDestinationId)
+//                        popUpTo(navController.graph.startDestinationId)
 //                        launchSingleTop = true
                     }
                 }
@@ -167,5 +169,12 @@ sealed class BottomNavItem(
         InstrumentsSubgraph.buildRoute(NoParams),
         R.string.instruments_screen_title,
         Icons.Filled.Payment,
+    )
+
+    object Transactions : BottomNavItem(
+        TransactionsSubgraph.declaredPath,
+        TransactionsSubgraph.buildRoute(NoParams),
+        R.string.transactions_screen_title,
+        Icons.Filled.List,
     )
 }

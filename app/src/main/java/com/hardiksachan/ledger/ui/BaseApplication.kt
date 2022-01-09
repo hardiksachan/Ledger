@@ -4,6 +4,7 @@ import android.app.Application
 import com.hardiksachan.ledger.common.commonModule
 import com.hardiksachan.ledger.data.dataModule
 import com.hardiksachan.ledger.ui.features.instruments.instrumentsUiModule
+import com.hardiksachan.ledger.ui.features.transactions.transactionUiModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
@@ -22,7 +23,8 @@ class BaseApplication : Application() {
                 commonModule,
                 dataModule,
                 uiModule,
-                instrumentsUiModule
+                instrumentsUiModule,
+                transactionUiModule
             )
         }
     }
