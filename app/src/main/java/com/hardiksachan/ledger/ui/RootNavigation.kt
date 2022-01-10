@@ -9,12 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -153,6 +153,8 @@ fun BottomBar(navController: NavHostController) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
+        val bottomBarSelection = appVm.bottomBarSelection.collectAsState()
+
         val items = listOf(
             BottomNavItem.Transactions,
             BottomNavItem.Instruments,
@@ -166,7 +168,7 @@ fun BottomBar(navController: NavHostController) {
             BottomNavigationItem(
                 icon = { Icon(screen.icon, stringResource(screen.title)) },
                 label = { Text(stringResource(screen.title)) },
-                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                selected = bottomBarSelection.value == route,
                 onClick = {
                     appVm.bottomBarSelection.value = route
                     navController.navigate(route) {
