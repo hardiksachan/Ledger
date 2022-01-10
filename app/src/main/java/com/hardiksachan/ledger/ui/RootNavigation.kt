@@ -9,12 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -23,6 +23,7 @@ import com.hardiksachan.ledger.R
 import com.hardiksachan.ledger.presentation_logic.AppViewModel
 import com.hardiksachan.ledger.presentation_logic.instruments.add.AddInstrumentViewModel
 import com.hardiksachan.ledger.presentation_logic.instruments.list.InstrumentsViewModel
+import com.hardiksachan.ledger.presentation_logic.transactions.list.TransactionListViewModel
 import com.hardiksachan.ledger.ui.base.*
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.NoParams
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.doubleScopedComposable
@@ -31,6 +32,7 @@ import com.hardiksachan.ledger.ui.features.instruments.InstrumentsSubgraph
 import com.hardiksachan.ledger.ui.features.instruments.add.AddInstrumentScreen
 import com.hardiksachan.ledger.ui.features.instruments.list.InstrumentListScreen
 import com.hardiksachan.ledger.ui.features.transactions.TransactionsSubgraph
+import com.hardiksachan.ledger.ui.features.transactions.list.TransactionListScreen
 import com.hardiksachan.ledger.ui.theme.LocalMotionTransition
 import org.koin.androidx.compose.get
 import org.koin.core.parameter.parametersOf
@@ -95,6 +97,25 @@ fun RootNavigation(navController: NavHostController) {
                 }
             }
         }
+
+        scopedNavigation(TransactionsSubgraph) { nestedNavGraph ->
+
+            doubleScopedComposable(
+                navController, nestedNavGraph, TransactionListScreen
+            ) { _, _, scope ->
+                val navToAdd: () -> Unit = {
+                    // TODO
+                }
+
+                val vm = scope.get<TransactionListViewModel> {
+                    parametersOf(navToAdd)
+                }
+
+                TransactionListScreen(viewModel = vm) {
+                    BottomBar(navController = navController)
+                }
+            }
+        }
     }
 }
 
@@ -130,14 +151,14 @@ fun BottomBar(navController: NavHostController) {
         backgroundColor = MaterialTheme.colors.background
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val bottomBarSelection: String by appVm.bottomBarSelection.collectAsState()
+        val currentDestination = navBackStackEntry?.destination
 
         val items = listOf(
             BottomNavItem.Transactions,
             BottomNavItem.Instruments,
         )
 
-        updateStateIfStartDestination(navBackStackEntry?.destination, appVm)
+        updateStateIfStartDestination(currentDestination, appVm)
 
         items.forEach { screen ->
             val route = screen.route
@@ -145,12 +166,12 @@ fun BottomBar(navController: NavHostController) {
             BottomNavigationItem(
                 icon = { Icon(screen.icon, stringResource(screen.title)) },
                 label = { Text(stringResource(screen.title)) },
-                selected = bottomBarSelection.split("/")[0] == route.split("/")[0],
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                 onClick = {
                     appVm.bottomBarSelection.value = route
                     navController.navigate(route) {
-//                        popUpTo(navController.graph.startDestinationId)
-//                        launchSingleTop = true
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
                     }
                 }
             )
