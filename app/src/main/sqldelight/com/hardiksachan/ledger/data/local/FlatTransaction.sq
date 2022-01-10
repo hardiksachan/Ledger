@@ -7,7 +7,7 @@ CREATE VIEW flatTransaction AS
         i.currBalance,
         i.color AS instrumentColor,
         GROUP_CONCAT(
-            CONCAT_WS('/?/', c.name, c.color) || ';'
+            c.name || '/?/' || c.color || ';'
         ) AS categoryJson
     FROM ledgerEntry AS l
         LEFT JOIN mode AS m ON l.modeName = m.name
