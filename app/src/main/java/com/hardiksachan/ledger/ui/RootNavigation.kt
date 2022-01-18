@@ -24,7 +24,10 @@ import com.hardiksachan.ledger.presentation_logic.AppViewModel
 import com.hardiksachan.ledger.presentation_logic.instruments.add.AddInstrumentViewModel
 import com.hardiksachan.ledger.presentation_logic.instruments.list.InstrumentsViewModel
 import com.hardiksachan.ledger.presentation_logic.transactions.list.TransactionListViewModel
-import com.hardiksachan.ledger.ui.base.*
+import com.hardiksachan.ledger.ui.base.getEnterTransition
+import com.hardiksachan.ledger.ui.base.getExitTransition
+import com.hardiksachan.ledger.ui.base.getPopEnterTransition
+import com.hardiksachan.ledger.ui.base.getPopExitTransition
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.NoParams
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.doubleScopedComposable
 import com.hardiksachan.ledger.ui.base.scopednav.navigation.scopedNavigation
@@ -68,7 +71,7 @@ fun RootNavigation(navController: NavHostController) {
             ) { _, _, scope ->
                 val navToAdd: () -> Unit = {
                     navController.navigate(
-                        AddInstrumentScreen.buildRoute(NoParams, NavTransition.FadeThrough)
+                        AddInstrumentScreen.buildRoute(NoParams)
                     )
                 }
 
@@ -170,10 +173,14 @@ fun BottomBar(navController: NavHostController) {
                 label = { Text(stringResource(screen.title)) },
                 selected = bottomBarSelection.value == route,
                 onClick = {
-                    appVm.bottomBarSelection.value = route
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.startDestinationId)
-                        launchSingleTop = true
+                    if (appVm.bottomBarSelection.value != route) {
+                        appVm.bottomBarSelection.value = route
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
