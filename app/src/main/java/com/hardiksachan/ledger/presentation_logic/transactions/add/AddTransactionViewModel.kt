@@ -1,9 +1,11 @@
 package com.hardiksachan.ledger.presentation_logic.transactions.add
 
+import com.hardiksachan.ledger.common.ResultWrapper
 import com.hardiksachan.ledger.domain.repository.IInstrumentRepository
 import com.hardiksachan.ledger.domain.repository.ITransactionRepository
 import com.hardiksachan.ledger.presentation_logic.BaseViewModel
 import com.hardiksachan.ledger.ui.base.savestate.StateSaver
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.Clock
 
 private const val TitleKey = "AddTransactionTitleStateSaverKey"
@@ -21,7 +23,7 @@ class AddTransactionViewModel(
     private val clock: Clock,
     isDebit: Boolean,
     private val onDone: () -> Unit
-): BaseViewModel() {
+) : BaseViewModel() {
 
     private val _title = saver.getAutoSaveFlow(coroutineScope, TitleKey, "")
     private val _amount = saver.getAutoSaveFlow(coroutineScope, AmountKey, 0L)
@@ -31,8 +33,41 @@ class AddTransactionViewModel(
     private val _modeId = saver.getAutoSaveFlow(coroutineScope, ModeKey, "")
     private val _remark = saver.getAutoSaveFlow(coroutineScope, RemarkKey, "")
 
-    private fun onSave() {
-        // TODO
-        onDone ()
+    private suspend fun onSave() {
+        instrumentsRepo.getInstrument(_instrumentId.value).collectLatest { instrument ->
+            when (instrument) {
+                is ResultWrapper.Failure -> TODO("Show error message")
+                is ResultWrapper.Success -> {
+                    transactionRepo.getAllModes().collectLatest { modes ->
+                        when (modes) {
+                            is ResultWrapper.Failure -> TODO("Show error message")
+                            is ResultWrapper.Success -> {
+                                transactionRepo.getAllCategories().collectLatest { categories ->
+                                    when (categories) {
+                                        is ResultWrapper.Failure -> TODO("Show error message")
+                                        is ResultWrapper.Success -> {
+                                            transactionRepo.insertTransaction(
+                                                _title.value,
+                                                _amount.value,
+                                                _isDebit.value,
+                                                instrument.result,
+                                                categories.result.filter {
+                                                    it.name in _categoryIds.value.split(";")
+                                                },
+                                                modes.result.first { it.name == _modeId.value },
+                                                _remark.value,
+                                                clock.now()
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        onDone()
     }
 }
